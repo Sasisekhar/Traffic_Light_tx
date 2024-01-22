@@ -162,7 +162,7 @@ namespace cadmium::comms {
                     state.downstream_tx = true;
                 }
 
-                state.sigma = 0.01;
+                state.sigma = 0.1;
             }
 
             if(!downstream_in->empty()) {
@@ -219,7 +219,7 @@ namespace cadmium::comms {
                     state.downstream_rx_hist.clear();
                     state.upstream_tx = true;
                     state.transaction_complete = false;
-                    state.sigma = 0;
+                    state.sigma = 0.1;
                 }
             }
         }

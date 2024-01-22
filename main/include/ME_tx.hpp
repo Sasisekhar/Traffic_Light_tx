@@ -9,7 +9,7 @@
 #ifdef RT_ESP32
 #include <driver/gpio.h>
 #include "esp_system.h"
-#include "esp_console.h"
+// #include "esp_console.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/queue.h"
@@ -86,17 +86,18 @@ namespace cadmium::comms {
         public:
 
         Port<dll_frame> in;
+        Port<uint64_t> out;
 
 #ifdef RT_ESP32
         gpio_num_t txpin;
 #else
         using gpio_num_t = uint32_t;
-        Port<uint64_t> out;
 #endif
 
         //Constructor
         ME_tx(const std::string id, gpio_num_t _txpin, uint32_t _tickres): Atomic<ME_txState> (id, ME_txState()) {
             in = addInPort<dll_frame> ("in");
+            out = addOutPort<uint64_t>("out");
 
 #ifdef RT_ESP32
             txpin = _txpin;
@@ -104,8 +105,6 @@ namespace cadmium::comms {
             tx_config.loop_count = 0;
             tx_config.flags.eot_level = false; //important! this value gets corrupted when numerous atomics are placed
             config_channel_encoders();
-#else
-            out = addOutPort<uint64_t>("out");
 #endif
 
         }
@@ -130,21 +129,20 @@ namespace cadmium::comms {
             state.out_data |= (SELECT_MASK & ((uint64_t)(state.in_data.datalen_frame_select? 1 : 0) << (PAYLOAD_LEN + FRAME_NUM_LEN + FRAME_NUM_LEN)));
             state.out_data |= (CHECKSUM_MASK & ((uint64_t)state.in_data.checksum << (PAYLOAD_LEN + FRAME_NUM_LEN + FRAME_NUM_LEN + SELECT_LEN)));
 
-            state.sigma = 0;
+            state.sigma = 0.1;
             // ESP_LOGI(TAG, "[APP] Free memory: %d bytes", esp_get_free_heap_size());
         }
         
         
         // output function
         void output(const ME_txState& state) const override {
+            out->addMessage(state.out_data);
 #ifdef RT_ESP32
 
 #ifdef NO_LOGGING
             ESP_LOGI(TAG, "Transmitted: 0x%llx", state.out_data);
 #endif
             ESP_ERROR_CHECK(rmt_transmit(tx_channel, manchester_encoder, &state.out_data, sizeof(uint64_t), &tx_config));
-#else
-            out->addMessage(state.out_data);
 #endif
         }
 

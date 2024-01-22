@@ -88,7 +88,7 @@ namespace cadmium::comms {
                 }
 
                 state.downstream_tx = true;
-                state.sigma = 0;
+                state.sigma = 0.1;
             }
 
             if(!downstream_in->empty()) {
@@ -112,7 +112,7 @@ namespace cadmium::comms {
                 }
 
                 state.upstream_tx = true;
-                state.sigma = 0;
+                state.sigma = 0.1;
 
             }
         }
