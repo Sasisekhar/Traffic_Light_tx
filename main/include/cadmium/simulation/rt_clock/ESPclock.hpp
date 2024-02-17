@@ -29,8 +29,6 @@
 #include "rt_clock.hpp"
 #include "../../exception.hpp"
 
-#include "interrupt_handler.hpp"
-
 const char* TAG = "rt_clock.hpp";
 
 namespace cadmium {
